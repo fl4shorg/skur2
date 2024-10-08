@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="login.css">
+    <title>Login</title>
+    <style>
+        body {
+            background-image: url('inicio.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            text-align: center;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #notification {
+            margin-top: 10px;
+            display: none;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .eye-icon {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: black;
+            background-color: white;
+            border-radius: 50%;
+            padding: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-sign-in-alt"></i> Login</h1>
+        <form id="loginForm">
+            <label for="username"><i class="fas fa-user"></i> Usuário:</label>
+            <input type="text" id="username" required><br>
+
+            <label for="password"><i class="fas fa-key"></i> Senha:</label>
+            <div class="input-container">
+                <input type="password" id="password" required><br>
+                <i class="fas fa-eye eye-icon" id="togglePassword" onclick="togglePassword()"></i>
+            </div>
+
+            <button type="submit"><i class="fas fa-door-open"></i> Entrar</button>
+        </form>
+        <div id="notification" class="hidden"></div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('togglePassword');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            console.log('Tentando logar com usuário:', username);
+
+            fetch('./usuarios.json') // Ajuste o caminho se necessário
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar usuários: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    console.log('Usuários carregados:', users);
+                    const user = users.find(user => user.usuario === username && user.senha === password);
+                    const notification = document.getElementById('notification');
+
+                    // Limpa a notificação anterior
+                    notification.style.display = 'none';
+
+                    if (user) {
+                        notification.innerHTML = '<i class="fas fa-check-circle"></i> Logado com sucesso!';
+                        notification.className = 'success';
+                        notification.style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = 'exibir.html'; // Redireciona após 2 segundos
+                        }, 2000);
+                    } else {
+                        notification.innerHTML = '<i class="fas fa-exclamation-circle"></i> Usuário ou senha incorretos!';
+                        notification.className = 'error';
+                        notification.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    const notification = document.getElementById('notification');
+                    notification.innerHTML = '<i class="fas fa-exclamation-circle"></i> Erro ao carregar usuários!';
+                    notification.className = 'error';
+                    notification.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>
